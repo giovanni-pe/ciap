@@ -1,4 +1,4 @@
-name: Test Folder and File Structure
+name: Test Workflow
 
 on:
   push:
@@ -6,39 +6,35 @@ on:
       - main  # Ejecuta este flujo en cada push a la rama 'main'
 
 jobs:
-  create_test_structure:
+  create_directories_and_files:
     runs-on: ubuntu-latest
     steps:
-      - name: Configurar el repositorio
-        uses: actions/checkout@v2
+      - name: Comprobar ubicación actual
+        run: |
+          pwd  # Imprime el directorio actual para verificar dónde se ejecuta
 
-      - name: Crear estructura de carpetas y archivos para testeo
+      - name: Crear carpetas y archivos de prueba
         run: |
           # Crear la carpeta principal "test"
           mkdir -p test
-
+          
           # Cambiar al directorio "test"
           cd test
-
+          
           # Crear subcarpetas dentro de "test"
           mkdir -p noticias deportes economia politica
-
-          # Crear archivos con contenido simulado usando echo
+          
+          # Crear archivos con contenido de ejemplo usando echo
           echo "Noticia de última hora en deportes: Equipo gana campeonato." > deportes/noticia1.txt
           echo "Análisis del mercado: Economía mundial en crecimiento." > economia/noticia2.txt
           echo "Elecciones: Nuevos cambios en el panorama político." > politica/noticia3.txt
-
-          # Verificar la estructura creada
-          echo "Estructura de carpetas y archivos creados en 'test':"
-          ls -R  # Muestra la estructura de carpetas y archivos
-
-      - name: Mostrar contenido de archivos creados
+          
+          # Volver al directorio principal y listar la estructura creada
+          cd ..
+          echo "Estructura de carpetas y archivos creados:"
+          ls -R test  # Lista de forma recursiva para ver toda la estructura
+          
+      - name: Mostrar ubicación final y estructura completa
         run: |
-          echo "Contenido de deportes/noticia1.txt:"
-          cat test/deportes/noticia1.txt
-
-          echo "Contenido de economia/noticia2.txt:"
-          cat test/economia/noticia2.txt
-
-          echo "Contenido de politica/noticia3.txt:"
-          cat test/politica/noticia3.txt
+          pwd  # Imprime el directorio actual para confirmar ubicación
+          ls -R  # Lista todos los archivos y carpetas de forma recursiva desde el directorio actual
