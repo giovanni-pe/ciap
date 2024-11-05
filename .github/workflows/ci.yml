@@ -1,4 +1,4 @@
-name: Test Workflow
+name: CI/CD Workflow
 
 on:
   push:
@@ -6,35 +6,79 @@ on:
       - main  # Ejecuta este flujo en cada push a la rama 'main'
 
 jobs:
-  create_directories_and_files:
+  # Job de inicialización
+  init:
     runs-on: ubuntu-latest
     steps:
-      - name: Comprobar ubicación actual
-        run: |
-          pwd  # Imprime el directorio actual para verificar dónde se ejecuta
+      - name: Clonar el repositorio
+        uses: actions/checkout@v2
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'  # Ajusta la versión de Node según tus necesidades
+      
+      - name: Instalar dependencias
+        run: npm install
+        working-directory: ${{ github.workspace }}  # Asegura que esté en la raíz del repositorio
 
-      - name: Crear carpetas y archivos de prueba
+  # Job de pruebas
+  tests:
+    runs-on: ubuntu-latest
+    needs: init  # Ejecutar después de 'init'
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v2
+
+      - name: Ejecutar pruebas
         run: |
-          # Crear la carpeta principal "test"
-          mkdir -p test
-          
-          # Cambiar al directorio "test"
-          cd test
-          
-          # Crear subcarpetas dentro de "test"
-          mkdir -p noticias deportes economia politica
-          
-          # Crear archivos con contenido de ejemplo usando echo
-          echo "Noticia de última hora en deportes: Equipo gana campeonato." > deportes/noticia1.txt
-          echo "Análisis del mercado: Economía mundial en crecimiento." > economia/noticia2.txt
-          echo "Elecciones: Nuevos cambios en el panorama político." > politica/noticia3.txt
-          
-          # Volver al directorio principal y listar la estructura creada
-          cd ..
-          echo "Estructura de carpetas y archivos creados:"
-          ls -R test  # Lista de forma recursiva para ver toda la estructura
-          
-      - name: Mostrar ubicación final y estructura completa
+          echo "Ejecutando pruebas..."
+        working-directory: ${{ github.workspace }}
+
+  # Job de plan de despliegue
+  deploy_plan:
+    runs-on: ubuntu-latest
+    needs: tests  # Ejecutar después de 'tests'
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v2
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      
+      - name: Instalar dependencias
+        run: npm install
+        working-directory: ${{ github.workspace }}
+
+      - name: Copiar archivo .env
         run: |
-          pwd  # Imprime el directorio actual para confirmar ubicación
-          ls -R  # Lista todos los archivos y carpetas de forma recursiva desde el directorio actual
+          cp ${{ github.workspace }}/variables/.env ${{ github.workspace }}/  # Copia el archivo .env desde la carpeta 'variables' a la raíz del proyecto
+
+  # Job de despliegue
+  deploy:
+    runs-on: ubuntu-latest
+    needs: deploy_plan  # Ejecutar después de 'deploy_plan'
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v2
+
+      - name: Navegar a la carpeta infraestructure
+        working-directory: ${{ github.workspace }}/infraestructure
+
+      - name: Inicializar Terraform
+        run: terraform init
+        working-directory: ${{ github.workspace }}/infraestructure
+
+      - name: Destruir la infraestructura existente (opcional)
+        run: terraform destroy -auto-approve
+        working-directory: ${{ github.workspace }}/infraestructure
+      
+      - name: Planificar la infraestructura
+        run: terraform plan
+        working-directory: ${{ github.workspace }}/infraestructure
+
+      - name: Aplicar cambios en la infraestructura
+        run: terraform apply -auto-approve
+        working-directory: ${{ github.workspace }}/infraestructure
