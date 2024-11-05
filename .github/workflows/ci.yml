@@ -1,0 +1,44 @@
+name: Test Folder and File Structure
+
+on:
+  push:
+    branches:
+      - main  # Ejecuta este flujo en cada push a la rama 'main'
+
+jobs:
+  create_test_structure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configurar el repositorio
+        uses: actions/checkout@v2
+
+      - name: Crear estructura de carpetas y archivos para testeo
+        run: |
+          # Crear la carpeta principal "test"
+          mkdir -p test
+
+          # Cambiar al directorio "test"
+          cd test
+
+          # Crear subcarpetas dentro de "test"
+          mkdir -p noticias deportes economia politica
+
+          # Crear archivos con contenido simulado usando echo
+          echo "Noticia de última hora en deportes: Equipo gana campeonato." > deportes/noticia1.txt
+          echo "Análisis del mercado: Economía mundial en crecimiento." > economia/noticia2.txt
+          echo "Elecciones: Nuevos cambios en el panorama político." > politica/noticia3.txt
+
+          # Verificar la estructura creada
+          echo "Estructura de carpetas y archivos creados en 'test':"
+          ls -R  # Muestra la estructura de carpetas y archivos
+
+      - name: Mostrar contenido de archivos creados
+        run: |
+          echo "Contenido de deportes/noticia1.txt:"
+          cat test/deportes/noticia1.txt
+
+          echo "Contenido de economia/noticia2.txt:"
+          cat test/economia/noticia2.txt
+
+          echo "Contenido de politica/noticia3.txt:"
+          cat test/politica/noticia3.txt
